@@ -91,7 +91,6 @@ module I18nRouting
             opts[:controller] ||= r.to_s.pluralize
             
             resource = resource_from_params(type, r, opts.dup)
-
             res = ["#{I18nRouting.locale_escaped(locale)}_#{r}".to_sym, opts]
             constraints = if opts[:constraints].is_a?(Hash)
               ::I18nRoutingConstraints.new(opts[:constraints].dup)
