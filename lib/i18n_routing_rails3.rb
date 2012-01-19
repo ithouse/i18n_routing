@@ -19,7 +19,10 @@ class I18nRoutingConstraints
   def args_matches?(request)
     @hsh.each do |key,value|
       result = false
-      unless key == :i18n_locale
+      case key
+      when :constraint_obj then result = value.matches? request
+      when :i18n_locale then result = true
+      else
         given_value = if request.params.has_key?(key)
           request.params[key]
         elsif request.respond_to?(key)
@@ -33,8 +36,6 @@ class I18nRoutingConstraints
             given_value == value
           end
         end
-      else
-        result = true
       end
       return false unless result
     end
@@ -95,6 +96,8 @@ module I18nRouting
             res = ["#{I18nRouting.locale_escaped(locale)}_#{r}".to_sym, opts]
             constraints = if opts[:constraints].is_a?(Hash)
               ::I18nRoutingConstraints.new(opts[:constraints].dup)
+            elsif opts[:constraints].responds_to? :matches?
+              ::I18nRoutingConstraints.new({:constraint_obj => opts[:constraints]})
             else
               ::I18nRoutingConstraints.new()
             end
@@ -379,6 +382,8 @@ module I18nRouting
         @path = @localized_path
         @options[:constraints] = if @options[:constraints].is_a?(Hash)
           ::I18nRoutingConstraints.new(@options[:constraints].dup)
+        elsif @options[:constraints].respond_to? :matches?
+          ::I18nRoutingConstraints.new(:constraint_obj => @options[:constraints])
         else
           ::I18nRoutingConstraints.new()
         end
